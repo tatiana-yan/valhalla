@@ -134,3 +134,28 @@ TEST(Standalone, DestinationOnlySourceTarget) {
     EXPECT_EQ(result.trip().routes(0).legs(0).algorithms(0), "time_dependent_reverse_a*");
   }
 }
+
+TEST(Standalone, DestinationOnlyLivingStreet) {
+  const std::string ascii_map = R"(
+      A----B----1----2----C
+          >|              |
+          >|              |
+           E----4----3----D
+  )";
+
+  const gurka::ways ways = {
+      {"AB", {{"highway", "residential"}}},   {"B1", {{"highway", "residential"}}},
+      {"12", {{"highway", "residential"}}},   {"2C", {{"highway", "residential"}}},
+      {"CD", {{"highway", "residential"}}},   {"D3", {{"highway", "residential"}}},
+      {"34", {{"highway", "residential"}}},   {"4E", {{"highway", "residential"}}},
+      {"BE", {{"highway", "living_street"}}},
+
+  };
+  const auto layout = gurka::detail::map_to_coordinates(ascii_map, 100);
+  auto map = gurka::buildtiles(layout, ways, {}, {}, "test/data/gurka_destination_living_street");
+  auto result = gurka::route(map, "A", "E", "auto");
+
+  ASSERT_EQ(result.trip().routes(0).legs_size(), 1);
+  auto leg = result.trip().routes(0).legs(0);
+  gurka::assert::raw::expect_path(result, {"AB", "B1", "12", "2C", "CD", "D3", "34", "4E"});
+}

@@ -282,6 +282,7 @@ public:
           way_.set_use(Use::kBridleway);
           break;
         case Use::kLivingStreet:
+          way_.set_destination_only(true);
           way_.set_use(Use::kLivingStreet);
           break;
         case Use::kParkingAisle:
